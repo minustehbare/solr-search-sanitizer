@@ -1,14 +1,14 @@
 module SolrSearchSanitizer
   module Sanitizer
-    BOOLEAN_STRING_OPERATOR_REGEXP = /\s(AND)\s|\s(OR)\s|\s(NOT)\s/
-    BOOLEAN_SYMBOL_OPERATOR_REGEXP = /\s(&&)\s|\s(!)\s|\s(\|\|)\s/
+    BOOLEAN_STRING_OPERATOR_REGEXP = /(\b(AND)\b|\b(OR)\b|\b(NOT)\b)/
+    BOOLEAN_SYMBOL_OPERATOR_REGEXP = /\B(&&)\B|\B(!)\B|\B(\|\|)\B/
     BRACKET_REGEXP = /((\()|(\))|(\{)|(\})|(\[)|(\]))/
     WILDCARD_REGEXP = /((\*)|(\?))/
     #FUZZY_REGEXP = /[\w|\"](~)[\d]?/
     FUZZY_REGEXP = /(~)/
     #BOOST_REGEXP = /[\w|\"](\^)[\d]?/
     BOOST_REGEXP = /(\^)/
-    #BOOLEAN_MODIFIER_REGEXP = /((\+)|(-))[(\w+(\s|\b))|(\".+\")]/
+    #BOOLEAN_MODIFIER_REGEXP = /((\+)|(-))[(\w+(\b))|(\".+\")]/
     BOOLEAN_MODIFIER_REGEXP = /((\+)|(-))/
     MISC_REGEXP = /(\")|(:)/
     
@@ -33,11 +33,12 @@ module SolrSearchSanitizer
     ####################
     
     def escape_boolean_operators(query)
-      new_query = query.gsub(BOOLEAN_SYMBOL_OPERATOR_REGEXP, ' && ' => ' \\&\\& ', ' || ' => ' \\|\\| ', ' ! ' => ' \\! ')
+      new_query = query.gsub(BOOLEAN_SYMBOL_OPERATOR_REGEXP, '&&' => '\\&\\&', '||' => '\\|\\|', '!' => '\\!')
+      new_query = new_query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP, 'AND' => 'and', 'NOT' => 'not', 'OR' => 'or')
     end
     
     def remove_boolean_operators(query)
-      new_query = query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP.union(BOOLEAN_SYMBOL_OPERATOR_REGEXP), ' ')
+      new_query = query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP.union(BOOLEAN_SYMBOL_OPERATOR_REGEXP), '')
     end
     
     def escape_brackets(query)
@@ -49,7 +50,7 @@ module SolrSearchSanitizer
     end
     
     def escape_wildcards(query)
-      new_query = query.gsub(BRACKET_REGEXP, '\\\\\1')
+      new_query = query.gsub(WILDCARD_REGEXP, '\\\\\1')
     end
     
     def remove_wildcards(query)
@@ -57,7 +58,7 @@ module SolrSearchSanitizer
     end
     
     def escape_fuzzy(query)
-      new_query = query.gsub(BRACKET_REGEXP, '\\\\\1')
+      new_query = query.gsub(FUZZY_REGEXP, '\\\\\1')
     end
     
     def remove_fuzzy(query)
@@ -65,7 +66,7 @@ module SolrSearchSanitizer
     end
     
     def escape_boost(query)
-      new_query = query.gsub(BRACKET_REGEXP, '\\\\\1')
+      new_query = query.gsub(BOOST_REGEXP, '\\\\\1')
     end
     
     def remove_boost(query)
@@ -86,6 +87,15 @@ module SolrSearchSanitizer
     
     def remove_misc(query)
       new_query = query.gsub(MISC_REGEXP, '')
+    end
+    
+    def escape_special_characters(query)
+      new_query = escape_boolean_operators(query)
+      new_query = escape_brackets(new_query)
+      new_query = escape_fuzzy(new_query)
+      new_query = escape_boost(new_query)
+      new_query = escape_boolean_modifiers(new_query)
+      new_query = escape_misc(new_query)
     end
   end
 end
