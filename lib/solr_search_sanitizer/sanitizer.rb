@@ -41,7 +41,7 @@ module SolrSearchSanitizer
     end
     
     def escape_brackets(query)
-      new_query = query.gsub(BRACKET_REGEXP, '\\\\\1'
+      new_query = query.gsub(BRACKET_REGEXP, '\\\\\1')
     end
     
     def remove_brackets(query)
@@ -81,7 +81,7 @@ module SolrSearchSanitizer
     end
     
     def escape_misc(query)
-      new_query = query.gsub(MISC_REGEXP, '"' => '\\"', ':', '\\:')
+      new_query = query.gsub(MISC_REGEXP, '"' => '\\"', ':' => '\\:')
     end
     
     def remove_misc(query)
