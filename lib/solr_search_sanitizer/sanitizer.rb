@@ -28,64 +28,78 @@ module SolrSearchSanitizer
     #
     # BOOLEAN_MODIFIER_REGEXP => matches + or - characters at the start of search terms/phrases
     #
-    # MISC_REGEXp => matches (currently) : and " characters that are used for defining phrases or field values
+    # MISC_REGEXP => matches (currently) : and " characters that are used for defining phrases or field values
     #
     ####################
     
     def escape_boolean_operators(query)
+      return nil unless query
       new_query = query.gsub(BOOLEAN_SYMBOL_OPERATOR_REGEXP, '&&' => '\\&\\&', '||' => '\\|\\|', '!' => '\\!')
       new_query = new_query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP, 'AND' => 'and', 'NOT' => 'not', 'OR' => 'or')
     end
     
     def remove_boolean_operators(query)
+      return nil unless query
       new_query = query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP.union(BOOLEAN_SYMBOL_OPERATOR_REGEXP), '')
     end
     
     def escape_brackets(query)
+      return nil unless query
       new_query = query.gsub(BRACKET_REGEXP, '\\\\\1')
     end
     
     def remove_brackets(query)
+      return nil unless query
       new_query = query.gsub(BRACKET_REGEXP, '')
     end
     
     def escape_wildcards(query)
+      return nil unless query
       new_query = query.gsub(WILDCARD_REGEXP, '\\\\\1')
     end
     
     def remove_wildcards(query)
+      return nil unless query
       new_query = query.gsub(WILDCARD_REGEXP, '')
     end
     
     def escape_fuzzy(query)
+      return nil unless query
       new_query = query.gsub(FUZZY_REGEXP, '\\\\\1')
     end
     
     def remove_fuzzy(query)
+      return nil unless query
       new_query = query.gsub(FUZZY_REGEXP, '')
     end
     
     def escape_boost(query)
+      return nil unless query
       new_query = query.gsub(BOOST_REGEXP, '\\\\\1')
     end
     
     def remove_boost(query)
+      return nil unless query
       new_query = query.gsub(BOOST_REGEXP, '')
     end
     
     def escape_boolean_modifiers(query)
+      return nil unless query
       new_query = query.gsub(BOOLEAN_MODIFIER_REGEXP, '\\\\\1')
     end
     
     def remove_boolean_modifiers(query)
+      return nil unless query
       new_query = query.gsub(BOOLEAN_MODIFIER_REGEXP, '')
     end
     
     def escape_misc(query)
+      return nil unless query
       new_query = query.gsub(MISC_REGEXP, '"' => '\\"', ':' => '\\:')
     end
     
     def remove_misc(query)
+      return nil unless query
       new_query = query.gsub(MISC_REGEXP, '')
     end
     
