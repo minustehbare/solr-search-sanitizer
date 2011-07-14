@@ -1,7 +1,6 @@
 module SolrSearchSanitizer
   module Sanitizer
-    BOOLEAN_STRING_OPERATOR_REGEXP = /(\b(AND)\b|\b(OR)\b|\b(NOT)\b)/
-    BOOLEAN_SYMBOL_OPERATOR_REGEXP = /\B(&&)\B|\B(!)\B|\B(\|\|)\B/
+    BOOLEAN_OPERATORS_REGEXP = /\b(AND)\b|\b(OR)\b|\b(NOT)\b|\B(&&)\B|\B(!)\B|\B(\|\|)\B/
     BRACKET_REGEXP = /((\()|(\))|(\{)|(\})|(\[)|(\]))/
     WILDCARD_REGEXP = /((\*)|(\?))/
     #FUZZY_REGEXP = /[\w|\"](~)[\d]?/
@@ -34,13 +33,12 @@ module SolrSearchSanitizer
     
     def escape_boolean_operators(query)
       return nil unless query
-      new_query = query.gsub(BOOLEAN_SYMBOL_OPERATOR_REGEXP, '&&' => '\\&\\&', '||' => '\\|\\|', '!' => '\\!')
-      new_query = new_query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP, 'AND' => 'and', 'NOT' => 'not', 'OR' => 'or')
+      new_query = query.gsub(BOOLEAN_OPERATORS_REGEXP, '&&' => '\\&\\&', '||' => '\\|\\|', '!' => '\\!', 'AND' => 'and', 'NOT' => 'not', 'OR' => 'or')
     end
     
     def remove_boolean_operators(query)
       return nil unless query
-      new_query = query.gsub(BOOLEAN_STRING_OPERATOR_REGEXP.union(BOOLEAN_SYMBOL_OPERATOR_REGEXP), '')
+      new_query = query.gsub(BOOLEAN_OPERATORS_REGEXP, '')
     end
     
     def escape_brackets(query)
@@ -93,9 +91,16 @@ module SolrSearchSanitizer
       new_query = query.gsub(BOOLEAN_MODIFIER_REGEXP, '')
     end
     
+    # : (colon) characters in SOLR searches are modified by acts_as_solr_reloaded
+    # after they are escaped
+    #
+    # without sanitization, some_field:some_value => some_field_t:some_value from acts_as_solr
+    # with sanitization, some_field:some_value => some_field\_t:some_value
+    #
+    # for this reason we simply remove the : from the search entirely since it cannot be escaped
     def escape_misc(query)
       return nil unless query
-      new_query = query.gsub(MISC_REGEXP, '"' => '\\"', ':' => '\\:')
+      new_query = query.gsub(MISC_REGEXP, '"' => '\\"', ':' => '')
     end
     
     def remove_misc(query)
@@ -106,6 +111,7 @@ module SolrSearchSanitizer
     def escape_special_characters(query)
       new_query = escape_boolean_operators(query)
       new_query = escape_brackets(new_query)
+      new_query = escape_wildcards(new_query)
       new_query = escape_fuzzy(new_query)
       new_query = escape_boost(new_query)
       new_query = escape_boolean_modifiers(new_query)
