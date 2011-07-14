@@ -2,8 +2,8 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'solr_search_sanitizer'
   s.version     = '0.1.0'
-  s.summary     = 'A gem to provide helpers to sanitize SOLR queries.'
-  s.description = 'Add (optional) gem description here'
+  s.summary     = 'Provides sanitizer methods for SOLR queries.'
+  s.description = 'Provides sanitizer methods for SOLR queries.'
   s.required_ruby_version = '>= 1.8.7'
 
   s.author            = 'minustehbare'
